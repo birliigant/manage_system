@@ -2,7 +2,7 @@
 !pragma layout smetana
 skinparam defaultFontName Microsoft YaHei
 title 包依赖图（项目内部依赖）
-class "org.example.Main" as Main
+rectangle "org.example.Main" as Main
 package "org.example.web" as Web
 package "org.example.security" as Security
 package "org.example.service" as Service

@@ -6,25 +6,30 @@ start
 if (会话有效?) then (否)
   :返回 401;
   stop
+else (是)
 endif
 if (角色具有 projects 写权限?) then (否)
   :返回 403;
   stop
+else (是)
 endif
 :解析 JSON 与客户、负责人编号;
 if (编号格式正确?) then (否)
   :返回 400;
   stop
+else (是)
 endif
 :查询客户和负责人;
 if (关联对象均存在?) then (否)
   :返回 404;
   stop
+else (是)
 endif
 :绑定项目字段\n检查必填文本、金额和日期解析;
 if (字段有效?) then (否)
   :返回 400;
   stop
+else (是)
 endif
 :INSERT projects，获取 id;
 note right
