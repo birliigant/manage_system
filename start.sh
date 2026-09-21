@@ -9,4 +9,15 @@ mkdir -p out
 
 javac -encoding UTF-8 -cp lib/h2-2.2.224.jar -d out $(find src/main/java -name "*.java")
 
-exec java -cp out:src/main/resources:lib/h2-2.2.224.jar org.example.Main
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*)
+    CLASSPATH_SEPARATOR=';'
+    ;;
+  *)
+    CLASSPATH_SEPARATOR=':'
+    ;;
+esac
+
+CLASSPATH="out${CLASSPATH_SEPARATOR}src/main/resources${CLASSPATH_SEPARATOR}lib/h2-2.2.224.jar"
+
+exec java -cp "$CLASSPATH" org.example.Main

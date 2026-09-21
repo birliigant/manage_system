@@ -79,34 +79,104 @@
 - 数据通过 JDBC 写入本地 H2 文件，适合教学、演示和小型内部部署
 - 前端为单页式原生脚本实现，部署简单，调试成本低
 
-## 快速运行
+## 构建与启动
 
-推荐直接使用项目自带脚本：
+### 环境要求
+
+- Java JDK 17，必须包含 `java` 和 `javac`
+- Maven 3.9+（仅 Maven 构建方式需要）
+- Windows 使用 Git Bash、MSYS2 或 Cygwin 执行 `start.sh`
+
+### 清理构建产物
+
+macOS、Linux、Windows Git Bash：
 
 ```bash
-bash start.sh
+rm -rf out target
 ```
 
-脚本会自动创建 `out` 目录、编译 Java 源码，并以完整 classpath 启动服务。默认访问地址为 `http://localhost:8080/`，也可以通过环境变量指定端口：
+Windows PowerShell：
+
+```powershell
+Remove-Item -LiteralPath @('.\out', '.\target') -Recurse -Force -ErrorAction SilentlyContinue
+```
+
+以上命令只清理编译输出，不会删除 `data/manage-system.mv.db` 数据库文件。
+
+### 构建
+
+推荐使用 Maven 构建可执行 jar：
 
 ```bash
-PORT=9090 bash start.sh
+mvn clean package
 ```
 
-如果希望手动启动：
+构建产物为：`target/ManageSystem-1.0-SNAPSHOT.jar`。
+
+如果没有 Maven，可以直接使用 JDK 编译。
+
+macOS、Linux、Windows Git Bash：
 
 ```bash
 mkdir -p out
 javac -encoding UTF-8 -cp lib/h2-2.2.224.jar -d out $(find src/main/java -name "*.java")
-java -cp out:src/main/resources:lib/h2-2.2.224.jar org.example.Main
 ```
 
-如果本地已安装 Maven，也可以打包后运行：
+Windows PowerShell：
+
+```powershell
+New-Item -ItemType Directory -Force out | Out-Null
+$javaFiles = Get-ChildItem -Recurse src\main\java -Filter *.java | ForEach-Object FullName
+javac -encoding UTF-8 -cp "lib\h2-2.2.224.jar" -d out $javaFiles
+```
+
+### 启动
+
+#### 方式一：使用跨平台启动脚本
+
+`start.sh` 会自动编译源码，并根据操作系统选择正确的 classpath 分隔符。
+
+macOS、Linux、Windows Git Bash：
 
 ```bash
-mvn package
+bash ./start.sh
+```
+
+指定端口：
+
+```bash
+PORT=9090 bash ./start.sh
+```
+
+Windows PowerShell 中通过 Git Bash 启动并指定端口：
+
+```powershell
+$env:PORT=9090; bash .\start.sh
+```
+
+#### 方式二：直接运行编译结果
+
+macOS、Linux：
+
+```bash
+java -cp "out:src/main/resources:lib/h2-2.2.224.jar" org.example.Main
+```
+
+Windows PowerShell 或 Windows Git Bash：
+
+```powershell
+java -cp "out;src/main/resources;lib/h2-2.2.224.jar" org.example.Main
+```
+
+#### 方式三：运行 Maven jar
+
+```bash
 java -jar target/ManageSystem-1.0-SNAPSHOT.jar
 ```
+
+服务默认地址为 `http://localhost:8080/`。停止服务使用 `Ctrl+C`。
+
+数据库目录建议放在本地磁盘，不要放在百度网盘等实时同步目录中，否则同步客户端可能占用 H2 的锁文件。
 
 ## 数据库默认账号
 
@@ -119,7 +189,7 @@ java -jar target/ManageSystem-1.0-SNAPSHOT.jar
 | `finance` | `finance123` | `FINANCE` | 财务，可查看项目并维护收款记录 |
 | `designer` | `designer123` | `DESIGNER` | 设计师，可维护客户、项目、施工阶段 |
 
-这些账号由数据库初始化逻辑自动插入，对应代码见 [`DatabaseManager.java`](/Users/birliigant/百度云同步空间/Code/ManageSystem/src/main/java/org/example/db/DatabaseManager.java) 中的 `insertUser(...)` 调用。
+这些账号由数据库初始化逻辑自动插入，对应代码见 [`DatabaseManager.java`](src/main/java/org/example/db/DatabaseManager.java) 中的 `insertUser(...)` 调用。
 
 ## 数据持久化
 
@@ -129,6 +199,27 @@ java -jar target/ManageSystem-1.0-SNAPSHOT.jar
 - 首次启动会自动注入初始化账号和基础业务数据
 - 后续新增、修改、删除操作会写入数据库文件
 - 重启服务后数据会保留
+
+## 数据库表结构概要
+
+数据库使用 H2 文件数据库，默认连接地址为：
+`jdbc:h2:file:data/manage-system;AUTO_SERVER=TRUE;MODE=MySQL;DATABASE_TO_LOWER=TRUE`
+
+当前主要数据表和字段如下：
+
+| 表 | 用途 | 主要字段 |
+| --- | --- | --- |
+| `users` | 系统账号 | `id`、`username`、`display_name`、`password_hash`、`password_salt`、`role`、`status`、`created_at`、`employee_id` |
+| `user_sessions` | 登录会话 | `id`、`user_id`、`token`、`expires_at`、`created_at` |
+| `customers` | 客户信息 | `id`、`name`、`phone`、`source`、`level`、`intention`、`address`、`notes`、`created_date` |
+| `employees` | 员工信息 | `id`、`name`、`role`、`phone`、`specialty`、`status`、`hire_date`、`notes` |
+| `suppliers` | 供应商信息 | `id`、`name`、`contact_name`、`phone`、`category`、`address`、`status`、`notes`、`created_date` |
+| `projects` | 装修项目 | `id`、`name`、`customer_id`、`manager_id`、`status`、`style`、`address`、`area`、`contract_amount`、`start_date`、`expected_end_date`、`notes` |
+| `project_stages` | 施工阶段 | `id`、`project_id`、`stage_name`、`owner`、`status`、`planned_date`、`actual_date`、`notes` |
+| `material_purchases` | 材料采购 | `id`、`project_id`、`material_name`、`category`、`supplier`、`supplier_id`、`amount`、`status`、`purchase_date`、`notes` |
+| `payment_records` | 项目收款 | `id`、`project_id`、`type`、`amount`、`status`、`payment_date`、`payer`、`notes` |
+
+主要关系：账号绑定员工，项目关联客户和负责人，施工阶段、材料采购、收款记录关联项目；采购记录通过 `supplier_id` 逻辑关联供应商。删除项目会级联删除对应的施工阶段、采购记录和收款记录。完整字段类型、非空约束和外键说明见 [`docs/数据库表结构.md`](docs/数据库表结构.md)。
 
 ## 项目结构
 
