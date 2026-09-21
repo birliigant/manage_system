@@ -1,0 +1,17 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Microsoft YaHei
+title 新建项目通信图（协作图，编号表示消息顺序）
+object "ui : app.js" as UI
+object "api : ApiHandler" as API
+object "auth : AuthService" as Auth
+object "service : DecorationManagementService" as Service
+object "db : DatabaseManager" as DB
+UI --> API : 1: POST /api/projects
+API --> Auth : 1.1: requireUser()\n1.2: requireWritePermission()
+Auth --> DB : 1.1.1: 清理 / 查询会话
+API --> Service : 1.3: createProject(payload)
+Service --> DB : 1.3.1: 查询客户与员工\n1.3.2: insert(projects)\n1.3.3: 查询项目及关联列表
+Service --> API : 1.4: 返回项目 Map
+API --> UI : 1.5: 201 JSON
+@enduml

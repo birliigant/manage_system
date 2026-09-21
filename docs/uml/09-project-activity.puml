@@ -1,0 +1,38 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+title 新建项目活动图
+start
+:提交项目表单与 Bearer token;
+if (会话有效?) then (否)
+  :返回 401;
+  stop
+endif
+if (角色具有 projects 写权限?) then (否)
+  :返回 403;
+  stop
+endif
+:解析 JSON 与客户、负责人编号;
+if (编号格式正确?) then (否)
+  :返回 400;
+  stop
+endif
+:查询客户和负责人;
+if (关联对象均存在?) then (否)
+  :返回 404;
+  stop
+endif
+:绑定项目字段\n检查必填文本、金额和日期解析;
+if (字段有效?) then (否)
+  :返回 400;
+  stop
+endif
+:INSERT projects，获取 id;
+note right
+省略底层数据库异常路径；
+数据库错误由 API 返回错误 JSON。
+end note
+:重新查询项目及阶段、采购、收款;
+:返回 201 JSON;
+:前端提示成功并刷新;
+stop
+@enduml

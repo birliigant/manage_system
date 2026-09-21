@@ -1,0 +1,75 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Microsoft YaHei
+skinparam classAttributeIconSize 0
+title 核心实现类图（省略重复 CRUD 方法）
+interface HttpHandler {
+  +handle(exchange: HttpExchange): void
+}
+class Main {
+  +{static} main(args: String[]): void
+}
+class PageHandler
+class ApiHandler {
+  -service: DecorationManagementService
+  -authService: AuthService
+  +handle(exchange: HttpExchange): void
+}
+class AuthService {
+  -databaseManager: DatabaseManager
+  +login(username: String, password: String): Map
+  +requireUser(exchange: HttpExchange): AuthUser
+  +requireReadPermission(user: AuthUser, resource: String): void
+  +requireWritePermission(user: AuthUser, resource: String): void
+  +logout(exchange: HttpExchange): void
+}
+class AuthUser <<record>> {
+  id: long
+  username: String
+  displayName: String
+  role: String
+  permissions: List<String>
+}
+class DecorationManagementService {
+  -databaseManager: DatabaseManager
+  +dashboardSummary(): Map
+  +options(): Map
+  +listProjects(keyword: String, status: String): List<Map>
+  +getProject(id: long): Map
+  +createProject(payload: Map): Map
+  +updateProject(id: long, payload: Map): Map
+  +deleteProject(id: long): void
+}
+class DatabaseManager {
+  -jdbcUrl: String
+  -initialize(): void
+  +getConnection(): Connection
+  +queryOne(sql: String, binder: SqlConsumer, mapper: SqlFunction): T
+  +queryList(sql: String, binder: SqlConsumer, mapper: SqlFunction): List<T>
+  +insert(sql: String, binder: SqlConsumer): long
+  +update(sql: String, binder: SqlConsumer): int
+  +transaction(callback: SqlConsumer): void
+}
+interface "SqlConsumer<T>" as Consumer {
+  +accept(value: T): void
+}
+interface "SqlFunction<T, R>" as Function {
+  +apply(value: T): R
+}
+HttpHandler <|.. ApiHandler
+HttpHandler <|.. PageHandler
+Main ..> ApiHandler : 创建并注册
+Main ..> PageHandler : 创建并注册
+Main ..> DatabaseManager : 创建
+ApiHandler --> AuthService
+ApiHandler --> DecorationManagementService
+AuthService --> DatabaseManager
+AuthService ..> AuthUser : 创建 / 返回
+DecorationManagementService --> DatabaseManager
+DatabaseManager ..> Consumer
+DatabaseManager ..> Function
+note bottom of DecorationManagementService
+实际使用 Map / List<Map> 传递业务数据。
+domain 包中的六个 record 当前未接入业务调用链。
+end note
+@enduml

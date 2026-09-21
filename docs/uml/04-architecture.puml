@@ -1,0 +1,27 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Microsoft YaHei
+title 系统分层与组件架构
+actor "内部员工" as User
+component "浏览器前端\nindex.html / app.js / styles.css" as UI
+package "Java 17 单体应用" {
+  component "JDK HttpServer\nMain：路由注册、8 线程池" as Server
+  component PageHandler as Page
+  component ApiHandler as API
+  component AuthService as Auth
+  component DecorationManagementService as Service
+  component DatabaseManager as DB
+  artifact "classpath / 本地静态文件" as Static
+}
+database "H2 嵌入式文件数据库" as H2
+User --> UI
+UI --> Server : HTTP / JSON / Bearer token
+Server --> Page : / 与静态资源
+Server --> API : /api
+Page --> Static : 读取
+API --> Auth : 会话与权限
+API --> Service : 业务调用
+Auth --> DB
+Service --> DB
+DB --> H2 : JDBC
+@enduml

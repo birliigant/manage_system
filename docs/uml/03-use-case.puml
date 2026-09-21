@@ -1,0 +1,49 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Microsoft YaHei
+left to right direction
+title 用例图：实际角色权限
+actor "系统用户" as User
+actor "管理员" as Admin
+actor "项目经理" as Manager
+actor "财务" as Finance
+actor "设计师" as Designer
+User <|-- Admin
+User <|-- Manager
+User <|-- Finance
+User <|-- Designer
+rectangle "装修公司管理系统" {
+  usecase "登录 / 退出" as Login
+  usecase "查看经营看板" as Dashboard
+  usecase "查看项目" as ViewProject
+  usecase "客户、项目、施工阶段维护" as Work
+  usecase "供应商、材料采购维护" as Supply
+  usecase "查看员工" as ViewEmployee
+  usecase "员工维护" as Employee
+  usecase "账号维护 / 密码重置" as Account
+  usecase "查看收款" as ViewPayment
+  usecase "收款维护" as Payment
+}
+User -- Login
+User -- Dashboard
+User -- ViewProject
+Admin -- Work
+Manager -- Work
+Designer -- Work
+Admin -- Supply
+Manager -- Supply
+Admin -- ViewEmployee
+Manager -- ViewEmployee
+Admin -- Employee
+Admin -- Account
+Admin -- ViewPayment
+Manager -- ViewPayment
+Finance -- ViewPayment
+Admin -- Payment
+Finance -- Payment
+note bottom of Work
+维护含查看、新增、修改、删除。
+已登录且具有相应权限为业务用例前置条件。
+登录不作为每次业务操作的 include 子用例。
+end note
+@enduml

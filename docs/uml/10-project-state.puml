@@ -1,0 +1,20 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+title 项目状态图（建议业务生命周期，非已实现转换约束）
+state "待签约" as Pending
+state "设计中" as Design
+state "施工中" as Build
+state "已完工" as Complete
+state "售后中" as Aftercare
+[*] --> Pending : 建议起点
+Pending --> Design : 签约并进入设计
+Design --> Build : 设计确认并开工
+Build --> Complete : 竣工验收
+Complete --> Aftercare : 发起售后
+Aftercare --> Complete : 售后处理结束
+note bottom of Build
+五个状态名称来自 options().projectStatuses。
+上述转换为课程分析建议，代码未校验转换顺序，
+也未限制只能使用这五个值；创建默认状态为“施工中”。
+end note
+@enduml

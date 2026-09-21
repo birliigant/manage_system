@@ -1,0 +1,36 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+title 新建项目时序图（正常流程与异常出口）
+actor "有项目写权限的用户" as User
+participant "app.js" as UI
+participant ApiHandler as API
+participant AuthService as Auth
+participant DecorationManagementService as Service
+participant DatabaseManager as DB
+User -> UI : 提交项目表单
+UI -> API : POST /api/projects + Bearer token
+API -> Auth : requireUser(exchange)
+Auth -> DB : 清理过期会话 / 查询会话与用户
+Auth --> API : AuthUser
+API -> Auth : requireWritePermission(user, "projects")
+Auth --> API : 通过
+API -> Service : createProject(payload)
+Service -> Service : requiredLong(customerId, managerId)
+Service -> DB : getCustomer / getEmployee → queryOne
+DB --> Service : 客户与负责人存在
+Service -> DB : insert(projects, binder)
+DB -> Service : binder：校验必填字段并绑定参数
+Service --> DB : 参数
+DB --> Service : 新项目 id
+Service -> Service : getProject(id)
+Service -> DB : queryOne(projects) / queryList(阶段、采购、收款)
+DB --> Service : 项目与关联列表
+Service --> API : Map
+API --> UI : 201 JSON
+UI --> User : 成功提示 / 刷新列表
+note over API, DB
+鉴权失败 401、无写权限 403、字段错误 400、关联对象不存在 404。
+异常由 ApiHandler 捕获并返回 JSON；异常发生后不继续正常路径。
+insert 使用独立连接；此业务方法未调用 transaction，后续查询另开连接。
+end note
+@enduml

@@ -1,0 +1,69 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Microsoft YaHei
+skinparam classAttributeIconSize 0
+title 领域 record 类图（关键字段；虚线为 ID 逻辑关联）
+class Customer <<record>> {
+  id: long
+  name: String
+  phone: String
+  level: String
+  intention: String
+  createdDate: LocalDate
+}
+class Employee <<record>> {
+  id: long
+  name: String
+  role: String
+  status: String
+  hireDate: LocalDate
+}
+class Project <<record>> {
+  id: long
+  name: String
+  customerId: long
+  managerId: long
+  status: String
+  area: double
+  contractAmount: BigDecimal
+  startDate: LocalDate
+  expectedEndDate: LocalDate
+}
+class ProjectStage <<record>> {
+  id: long
+  projectId: long
+  stageName: String
+  owner: String
+  status: String
+  plannedDate: LocalDate
+  actualDate: LocalDate
+}
+class MaterialPurchase <<record>> {
+  id: long
+  projectId: long
+  materialName: String
+  supplier: String
+  amount: BigDecimal
+  status: String
+  purchaseDate: LocalDate
+}
+class PaymentRecord <<record>> {
+  id: long
+  projectId: long
+  type: String
+  amount: BigDecimal
+  status: String
+  paymentDate: LocalDate
+}
+Project ..> Customer : customerId
+Project ..> Employee : managerId
+ProjectStage ..> Project : projectId
+MaterialPurchase ..> Project : projectId
+PaymentRecord ..> Project : projectId
+legend bottom
+六个 record 均存在于 domain 包，但尚未被业务服务引用。
+虚线只表达编号关联，不表示 Java 对象引用或组合所有权。
+表结构基数见 ER 图；无 Supplier / User 业务实体类。
+省略 notes 等字段与编译器自动生成的访问器。
+endlegend
+@enduml

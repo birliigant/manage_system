@@ -1,0 +1,25 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Microsoft YaHei
+title 部署图（默认配置）
+node "客户端设备" {
+  artifact "浏览器" as Browser
+}
+node "应用主机" {
+  node "Java 17 JVM" {
+    component "JDK HttpServer\n默认端口 8080，PORT 可覆盖" as HTTP
+    artifact "ManageSystem 可执行 jar\nMain / Web / Security / Service / DB" as Jar
+    artifact "static/index.html\nstatic/app.js\nstatic/styles.css" as Static
+    component "H2 JDBC 驱动（嵌入式）" as Driver
+  }
+  database "data/manage-system.mv.db" as File
+}
+Browser --> HTTP : HTTP
+HTTP --> Jar : 调用处理器
+Jar --> Static : 读取静态资源
+Jar --> Driver : JDBC
+Driver --> File : 文件读写
+note bottom of Driver
+H2 与应用同进程；无独立数据库服务器。
+end note
+@enduml

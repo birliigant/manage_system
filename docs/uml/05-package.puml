@@ -1,0 +1,28 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Microsoft YaHei
+title 包依赖图（项目内部依赖）
+class "org.example.Main" as Main
+package "org.example.web" as Web
+package "org.example.security" as Security
+package "org.example.service" as Service
+package "org.example.db" as DB
+package "org.example.util" as Util
+package "org.example.domain" as Domain
+Main ..> Web
+Main ..> Security
+Main ..> Service
+Main ..> DB
+Web ..> Security
+Web ..> Service
+Web ..> Util
+Security ..> DB
+Security ..> Util
+Service ..> DB
+Service ..> Util
+DB ..> Util
+note bottom of Domain
+六个领域 record 已定义，
+但当前业务与安全包均未引用。
+end note
+@enduml

@@ -1,0 +1,39 @@
+@startuml
+skinparam defaultFontName Microsoft YaHei
+title 登录时序图
+actor 用户 as User
+participant "app.js" as UI
+participant ApiHandler as API
+participant AuthService as Auth
+participant PasswordUtils as Password
+participant DatabaseManager as DB
+User -> UI : 输入用户名与密码
+UI -> API : POST /api/auth/login
+API -> Auth : login(username, password)
+alt 用户名或密码为空
+  Auth --> API : AppException(400)
+  API --> UI : 400 JSON
+else 参数非空
+  Auth -> DB : queryOne(users)
+  DB --> Auth : UserRow / null
+  alt 用户不存在或停用
+    Auth --> API : AppException(401)
+    API --> UI : 401 JSON
+  else 用户启用
+    Auth -> Password : verifyPassword(password, salt, hash)
+    Password --> Auth : 校验结果
+    alt 密码错误
+      Auth --> API : AppException(401)
+      API --> UI : 401 JSON
+    else 密码正确
+      Auth -> DB : 删除过期会话
+      Auth -> Auth : 生成随机 token，设置 12 小时有效期
+      Auth -> DB : insert(user_sessions)
+      DB --> Auth : 会话编号
+      Auth --> API : token、expiresAt、user 与 permissions
+      API --> UI : 200 JSON
+      UI -> UI : localStorage 保存 token，加载界面
+    end
+  end
+end
+@enduml

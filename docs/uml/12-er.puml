@@ -1,0 +1,72 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Microsoft YaHei
+title 数据库 ER 图（关键字段）
+entity users {
+  *id: bigint <<PK>>
+  username: varchar <<UK>>
+  role: varchar
+  status: varchar
+  employee_id: bigint <<逻辑关联，可空>>
+}
+entity user_sessions {
+  *id: bigint <<PK>>
+  *user_id: bigint <<FK>>
+  token: varchar <<UK>>
+  expires_at: timestamp
+}
+entity customers {
+  *id: bigint <<PK>>
+  name: varchar
+  phone: varchar
+}
+entity employees {
+  *id: bigint <<PK>>
+  name: varchar
+  role: varchar
+}
+entity projects {
+  *id: bigint <<PK>>
+  *customer_id: bigint <<FK>>
+  *manager_id: bigint <<FK>>
+  status: varchar
+  contract_amount: decimal
+}
+entity project_stages {
+  *id: bigint <<PK>>
+  *project_id: bigint <<FK>>
+  stage_name: varchar
+  status: varchar
+}
+entity material_purchases {
+  *id: bigint <<PK>>
+  *project_id: bigint <<FK>>
+  supplier_id: bigint <<逻辑关联，可空>>
+  supplier: varchar
+  amount: decimal
+}
+entity payment_records {
+  *id: bigint <<PK>>
+  *project_id: bigint <<FK>>
+  amount: decimal
+  status: varchar
+}
+entity suppliers {
+  *id: bigint <<PK>>
+  name: varchar <<UK>>
+  status: varchar
+}
+users ||--o{ user_sessions : 用户会话 / 级联删除
+customers ||--o{ projects : 客户项目
+employees ||--o{ projects : 项目负责人
+projects ||--o{ project_stages : 阶段 / 级联删除
+projects ||--o{ material_purchases : 采购 / 级联删除
+projects ||--o{ payment_records : 收款 / 级联删除
+employees |o..o| users : 账号绑定（服务校验）
+suppliers |o..o{ material_purchases : 供应商编号（服务校验）
+legend bottom
+实线：DDL 中真实外键；虚线：无数据库外键的逻辑关系。
+员工与账号至多一对一由服务检查，数据库无对应唯一约束。
+字段为节选，完整字段见数据库表结构.md。
+endlegend
+@enduml
