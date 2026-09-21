@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>装修企业运营管理平台</title>
+    <link rel="stylesheet" href="/static/styles.css?v=20260430d">
+</head>
+<body>
+<section id="loginScreen" class="login-screen">
+    <div class="login-card">
+        <div class="login-intro">
+            <div class="login-intro-main">
+                <span class="login-eyebrow">企业统一运营入口</span>
+                <h1>装修企业运营管理平台</h1>
+                <p>面向装修企业的客户管理、项目履约、材料采购与资金回款一体化平台。</p>
+            </div>
+            <div class="login-feature-grid">
+                <article class="login-feature-card">
+                    <strong>客户与商机</strong>
+                    <span>统一沉淀客户档案、来源渠道与成交进度。</span>
+                </article>
+                <article class="login-feature-card">
+                    <strong>项目与交付</strong>
+                    <span>同步跟踪项目负责人、施工阶段与完工计划。</span>
+                </article>
+                <article class="login-feature-card">
+                    <strong>采购与供应商</strong>
+                    <span>集中维护供应商主数据、采购状态与结算情况。</span>
+                </article>
+                <article class="login-feature-card">
+                    <strong>账号与权限</strong>
+                    <span>按角色开放模块访问，支持员工与系统账号绑定。</span>
+                </article>
+            </div>
+        </div>
+        <div class="login-side">
+            <form id="loginForm" class="entity-form login-form">
+                <label>用户名<input name="username" placeholder="请输入用户名，例如：admin" required></label>
+                <label>密码<input name="password" type="password" placeholder="请输入密码" required></label>
+                <button id="loginSubmitButton" type="submit" class="primary-btn full-width">登录系统</button>
+            </form>
+            <section id="loginMessageBar" class="message-bar hidden"></section>
+            <div class="demo-accounts">
+                <h3>初始化账号</h3>
+                <div class="account-pills">
+                    <button type="button" class="ghost-chip" data-demo-username="admin" data-demo-password="admin123">管理员</button>
+                    <button type="button" class="ghost-chip" data-demo-username="manager" data-demo-password="manager123">项目经理</button>
+                    <button type="button" class="ghost-chip" data-demo-username="finance" data-demo-password="finance123">财务</button>
+                    <button type="button" class="ghost-chip" data-demo-username="designer" data-demo-password="designer123">设计师</button>
+                </div>
+                <p class="account-hint">首次登录后请修改默认密码。</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="appShell" class="app-shell hidden">
+    <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+    <aside class="sidebar">
+        <div class="sidebar-top">
+            <button id="sidebarToggle" class="sidebar-toggle" type="button" aria-label="折叠导航">折叠</button>
+        </div>
+        <div class="brand">
+            <span class="brand-compact">企</span>
+            <h1>装修企业运营平台</h1>
+        </div>
+        <nav class="nav">
+            <button class="nav-link active" data-tab="dashboard" title="经营看板"><span class="nav-icon">看</span><span class="nav-text">经营看板</span></button>
+            <button class="nav-link" data-tab="customers" data-resource="customers" title="客户管理"><span class="nav-icon">客</span><span class="nav-text">客户管理</span></button>
+            <button class="nav-link" data-tab="employees" data-resource="employees" title="员工管理"><span class="nav-icon">员</span><span class="nav-text">员工管理</span></button>
+            <button class="nav-link" data-tab="users" data-resource="users" title="账号管理"><span class="nav-icon">账</span><span class="nav-text">账号管理</span></button>
+            <button class="nav-link" data-tab="projects" data-resource="projects" title="项目管理"><span class="nav-icon">项</span><span class="nav-text">项目管理</span></button>
+            <button class="nav-link" data-tab="stages" data-resource="stages" title="施工阶段"><span class="nav-icon">施</span><span class="nav-text">施工阶段</span></button>
+            <button class="nav-link" data-tab="suppliers" data-resource="suppliers" title="供应商管理"><span class="nav-icon">供</span><span class="nav-text">供应商管理</span></button>
+            <button class="nav-link" data-tab="materials" data-resource="materials" title="材料采购"><span class="nav-icon">采</span><span class="nav-text">材料采购</span></button>
+            <button class="nav-link" data-tab="payments" data-resource="payments" title="收款管理"><span class="nav-icon">款</span><span class="nav-text">收款管理</span></button>
+        </nav>
+    </aside>
+
+    <main class="content">
+        <header class="hero">
+            <div class="hero-main">
+                <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="打开导航" aria-expanded="false">菜单</button>
+                <h2>企业运营控制台</h2>
+            </div>
+            <div class="hero-side">
+                <div class="user-panel">
+                    <span id="userRoleBadge" class="badge">未登录</span>
+                    <strong id="currentUserName">-</strong>
+                    <p id="currentUserMeta">-</p>
+                </div>
+                <div class="hero-actions">
+                    <button id="reloadButton" class="primary-btn">刷新数据</button>
+                    <button id="logoutButton" class="secondary-btn">退出登录</button>
+                </div>
+            </div>
+        </header>
+
+        <section id="messageBar" class="message-bar hidden"></section>
+
+        <section class="tab-panel active" data-panel="dashboard">
+            <div class="section-header">
+                <div>
+                    <h3>经营总览</h3>
+                </div>
+            </div>
+            <div id="summaryCards" class="summary-grid"></div>
+            <div class="dashboard-grid">
+                <article class="card">
+                    <div class="card-header"><h4>近期项目</h4></div>
+                    <div id="recentProjects" class="list-block"></div>
+                </article>
+                <article class="card">
+                    <div class="card-header"><h4>待跟进阶段</h4></div>
+                    <div id="upcomingStages" class="list-block"></div>
+                </article>
+            </div>
+        </section>
+
+        <section class="tab-panel" data-panel="customers" data-resource="customers">
+            <div class="section-header">
+                <div>
+                    <h3>客户管理</h3>
+                </div>
+                <input id="customerSearch" class="search-input" placeholder="搜索客户">
+            </div>
+            <div class="management-grid">
+                <article class="card">
+                    <div class="card-header"><h4>客户列表</h4></div>
+                    <div id="customersTable" class="table-wrap"></div>
+                </article>
+                <article class="card form-card" data-resource="customers">
+                    <div class="card-header"><h4 id="customerFormTitle">新增客户</h4></div>
+                    <form id="customerForm" class="entity-form">
+                        <input type="hidden" name="id">
+                        <label>客户姓名<input name="name" required></label>
+                        <label>联系电话<input name="phone" required></label>
+                        <label>来源<input name="source"></label>
+                        <label>客户等级<select name="level"></select></label>
+                        <label>意向等级<select name="intention"></select></label>
+                        <label>地址<input name="address"></label>
+                        <label>录入日期<input type="date" name="createdDate"></label>
+                        <label>备注<textarea name="notes" rows="4"></textarea></label>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn">保存客户</button>
+                            <button type="button" class="secondary-btn" data-reset-form="customerForm">清空</button>
+                        </div>
+                    </form>
+                </article>
+            </div>
+        </section>
+
+        <section class="tab-panel" data-panel="employees" data-resource="employees">
+            <div class="section-header">
+                <div>
+                    <h3>员工管理</h3>
+                </div>
+                <input id="employeeSearch" class="search-input" placeholder="搜索员工">
+            </div>
+            <div class="management-grid">
+                <article class="card">
+                    <div class="card-header"><h4>员工列表</h4></div>
+                    <div id="employeesTable" class="table-wrap"></div>
+                </article>
+                <article class="card form-card" data-resource="employees">
+                    <div class="card-header"><h4 id="employeeFormTitle">新增员工</h4></div>
+                    <form id="employeeForm" class="entity-form">
+                        <input type="hidden" name="id">
+                        <label>员工姓名<input name="name" required></label>
+                        <label>岗位<select name="role"></select></label>
+                        <label>联系电话<input name="phone" required></label>
+                        <label>擅长方向<input name="specialty"></label>
+                        <label>在职状态<select name="status"></select></label>
+                        <label>入职日期<input type="date" name="hireDate"></label>
+                        <label>备注<textarea name="notes" rows="4"></textarea></label>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn">保存员工</button>
+                            <button type="button" class="secondary-btn" data-reset-form="employeeForm">清空</button>
+                        </div>
+                    </form>
+                </article>
+            </div>
+        </section>
+
+        <section class="tab-panel" data-panel="users" data-resource="users">
+            <div class="section-header">
+                <div>
+                    <h3>账号管理</h3>
+                </div>
+                <input id="userSearch" class="search-input" placeholder="搜索账号">
+            </div>
+            <div class="management-grid">
+                <article class="card">
+                    <div class="card-header"><h4>账号列表</h4></div>
+                    <div id="usersTable" class="table-wrap"></div>
+                </article>
+                <article class="card form-card" data-resource="users">
+                    <div class="card-header"><h4 id="userFormTitle">新增账号</h4></div>
+                    <form id="userForm" class="entity-form">
+                        <input type="hidden" name="id">
+                        <label>登录用户名<input name="username" required></label>
+                        <label>显示名称<input name="displayName" required></label>
+                        <label>绑定员工<select name="employeeId"></select></label>
+                        <label>角色<select name="role"></select></label>
+                        <label>状态<select name="status"></select></label>
+                        <label>登录密码<input name="password" type="password" placeholder="新增必填；编辑账号时填写后将直接更新为新密码"></label>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn">保存账号</button>
+                            <button type="button" class="secondary-btn" data-reset-form="userForm">清空</button>
+                        </div>
+                    </form>
+                </article>
+            </div>
+        </section>
+
+        <section class="tab-panel" data-panel="projects" data-resource="projects">
+            <div class="section-header">
+                <div>
+                    <h3>项目管理</h3>
+                </div>
+                <input id="projectSearch" class="search-input" placeholder="搜索项目">
+            </div>
+            <div class="management-grid">
+                <article class="card">
+                    <div class="card-header"><h4>项目列表</h4></div>
+                    <div id="projectsTable" class="table-wrap"></div>
+                </article>
+                <article class="card form-card" data-resource="projects">
+                    <div class="card-header"><h4 id="projectFormTitle">新增项目</h4></div>
+                    <form id="projectForm" class="entity-form">
+                        <input type="hidden" name="id">
+                        <label>项目名称<input name="name" required></label>
+                        <label>所属客户<select name="customerId"></select></label>
+                        <label>项目经理<select name="managerId"></select></label>
+                        <label>项目状态<select name="status"></select></label>
+                        <label>装修风格<input name="style"></label>
+                        <label>项目地址<input name="address" required></label>
+                        <label>面积（㎡）<input type="number" step="0.01" name="area" required></label>
+                        <label>合同金额<input type="number" step="0.01" name="contractAmount" required></label>
+                        <label>开工日期<input type="date" name="startDate"></label>
+                        <label>预计完工<input type="date" name="expectedEndDate"></label>
+                        <label>备注<textarea name="notes" rows="4"></textarea></label>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn">保存项目</button>
+                            <button type="button" class="secondary-btn" data-reset-form="projectForm">清空</button>
+                        </div>
+                    </form>
+                </article>
+            </div>
+        </section>
+
+        <section class="tab-panel" data-panel="stages" data-resource="stages">
+            <div class="section-header">
+                <div>
+                    <h3>施工阶段</h3>
+                </div>
+            </div>
+            <div class="management-grid">
+                <article class="card">
+                    <div class="card-header"><h4>阶段列表</h4></div>
+                    <div id="stagesTable" class="table-wrap"></div>
+                </article>
+                <article class="card form-card" data-resource="stages">
+                    <div class="card-header"><h4 id="stageFormTitle">新增阶段</h4></div>
+                    <form id="stageForm" class="entity-form">
+                        <input type="hidden" name="id">
+                        <label>所属项目<select name="projectId"></select></label>
+                        <label>阶段名称<input name="stageName" required></label>
+                        <label>负责人<input name="owner"></label>
+                        <label>状态<select name="status"></select></label>
+                        <label>计划日期<input type="date" name="plannedDate"></label>
+                        <label>实际完成<input type="date" name="actualDate"></label>
+                        <label>备注<textarea name="notes" rows="4"></textarea></label>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn">保存阶段</button>
+                            <button type="button" class="secondary-btn" data-reset-form="stageForm">清空</button>
+                        </div>
+                    </form>
+                </article>
+            </div>
+        </section>
+
+        <section class="tab-panel" data-panel="suppliers" data-resource="suppliers">
+            <div class="section-header">
+                <div>
+                    <h3>供应商管理</h3>
+                </div>
+                <input id="supplierSearch" class="search-input" placeholder="搜索供应商">
+            </div>
+            <div class="management-grid">
+                <article class="card">
+                    <div class="card-header"><h4>供应商列表</h4></div>
+                    <div id="suppliersTable" class="table-wrap"></div>
+                </article>
+                <article class="card form-card" data-resource="suppliers">
+                    <div class="card-header"><h4 id="supplierFormTitle">新增供应商</h4></div>
+                    <form id="supplierForm" class="entity-form">
+                        <input type="hidden" name="id">
+                        <label>供应商名称<input name="name" required></label>
+                        <label>联系人<input name="contactName"></label>
+                        <label>联系电话<input name="phone"></label>
+                        <label>分类<select name="category"></select></label>
+                        <label>合作状态<select name="status"></select></label>
+                        <label>地址<input name="address"></label>
+                        <label>创建日期<input type="date" name="createdDate"></label>
+                        <label>备注<textarea name="notes" rows="4"></textarea></label>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn">保存供应商</button>
+                            <button type="button" class="secondary-btn" data-reset-form="supplierForm">清空</button>
+                        </div>
+                    </form>
+                </article>
+            </div>
+        </section>
+
+        <section class="tab-panel" data-panel="materials" data-resource="materials">
+            <div class="section-header">
+                <div>
+                    <h3>材料采购</h3>
+                </div>
+            </div>
+            <div class="management-grid">
+                <article class="card">
+                    <div class="card-header"><h4>采购列表</h4></div>
+                    <div id="materialsTable" class="table-wrap"></div>
+                </article>
+                <article class="card form-card" data-resource="materials">
+                    <div class="card-header"><h4 id="materialFormTitle">新增采购</h4></div>
+                    <form id="materialForm" class="entity-form">
+                        <input type="hidden" name="id">
+                        <label>所属项目<select name="projectId"></select></label>
+                        <label>材料名称<input name="materialName" required></label>
+                        <label>分类<input name="category" required></label>
+                        <label>供应商<select name="supplierId"></select></label>
+                        <label>金额<input type="number" step="0.01" name="amount" required></label>
+                        <label>状态<select name="status"></select></label>
+                        <label>采购日期<input type="date" name="purchaseDate"></label>
+                        <label>备注<textarea name="notes" rows="4"></textarea></label>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn">保存采购</button>
+                            <button type="button" class="secondary-btn" data-reset-form="materialForm">清空</button>
+                        </div>
+                    </form>
+                </article>
+            </div>
+        </section>
+
+        <section class="tab-panel" data-panel="payments" data-resource="payments">
+            <div class="section-header">
+                <div>
+                    <h3>收款管理</h3>
+                </div>
+            </div>
+            <div class="management-grid">
+                <article class="card">
+                    <div class="card-header"><h4>收款列表</h4></div>
+                    <div id="paymentsTable" class="table-wrap"></div>
+                </article>
+                <article class="card form-card" data-resource="payments">
+                    <div class="card-header"><h4 id="paymentFormTitle">新增收款</h4></div>
+                    <form id="paymentForm" class="entity-form">
+                        <input type="hidden" name="id">
+                        <label>所属项目<select name="projectId"></select></label>
+                        <label>款项类型<select name="type"></select></label>
+                        <label>金额<input type="number" step="0.01" name="amount" required></label>
+                        <label>状态<select name="status"></select></label>
+                        <label>付款人<input name="payer"></label>
+                        <label>计划/到账日期<input type="date" name="paymentDate"></label>
+                        <label>备注<textarea name="notes" rows="4"></textarea></label>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn">保存收款</button>
+                            <button type="button" class="secondary-btn" data-reset-form="paymentForm">清空</button>
+                        </div>
+                    </form>
+                </article>
+            </div>
+        </section>
+    </main>
+</div>
+    <script src="/static/app.js?v=20260430d"></script>
+</body>
+</html>
